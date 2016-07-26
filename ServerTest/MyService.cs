@@ -9,7 +9,7 @@ namespace IoTServer
 	{
 		public void Init()
 		{
-			var httpBaseAddress = new Uri("http://192.168.85.1:65201");
+			var httpBaseAddress = new Uri("http://192.168.85.207:65201");
 
 			var sc = new WebServiceHost(typeof(IoTService), httpBaseAddress);
 		

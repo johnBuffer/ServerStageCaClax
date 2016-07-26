@@ -25,21 +25,12 @@ namespace ServerTest
             _connexion.Open();
         }
 
-        public void insertValue(string tableName, params string[] values)
+        public void InsertValue(string tableName, params string[] values)
         {
             var sql = "insert into "+tableName+" (";
-            for (int i = 0; i < values.Length / 2; i++)
-            {
-                sql += values[i] + ", ";
-            }
-            sql = sql.Remove(sql.Length - 2, 2);
+            sql += Utils.ArrayToString(values, 0, values.Length / 2);
             sql += ") values (";
-
-            for (int i = values.Length / 2; i < values.Length; i++)
-            {
-                sql += "'"+ values[i] + "', ";
-            }
-            sql = sql.Remove(sql.Length - 2, 2);
+            sql += Utils.ArrayToString(values, values.Length / 2, values.Length, true);
             sql += ")";
 
             Console.WriteLine(sql);
