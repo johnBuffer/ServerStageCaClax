@@ -13,7 +13,7 @@ namespace ServerTest
 
         public void Ping(int unitid, string date)
         {
-            var dbAccess = new DatabaseAccess("127.0.0.1", "3306", "test", "Jean", "Stageensuede1");
+            var dbAccess = new DatabaseAccess("127.0.0.1", "3306", "db_stage", "Hugo", "voielacte");
             dbAccess.InsertValue("pings", "Unit_ID", "Timestamp", unitid.ToString(), DateTime.Now.ToString());
         }
     }

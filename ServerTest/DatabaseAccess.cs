@@ -22,12 +22,13 @@ namespace ServerTest
             _password = password;
 
             _connexion = new MySqlConnection("Server="+_ip+";Port="+_port+";Database="+_dataBaseName+";Uid="+_user+";Pwd="+_password+";");
-            _connexion.Open();
+
+            _connexion.Open();          
         }
 
         public void InsertValue(string tableName, params string[] values)
         {
-            var sql = "insert into "+tableName+" (";
+            var sql = "Insert into "+tableName+" (";
             sql += Utils.ArrayToString(values, 0, values.Length / 2);
             sql += ") values (";
             sql += Utils.ArrayToString(values, values.Length / 2, values.Length, true);
