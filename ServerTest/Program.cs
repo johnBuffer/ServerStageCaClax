@@ -1,4 +1,3 @@
-using MySql.Data.MySqlClient;
 using System;
 
 namespace IoTServer
@@ -7,13 +6,12 @@ namespace IoTServer
 	{
 		public static void Main (string[] args)
 		{
-			Console.WriteLine ("Hello World!");
 			Console.WriteLine ("Starting service...");
 			MyService service = new MyService ();
-			service.Init ();
+            service.Init();
+
 			Console.WriteLine ("Done. Press Enter to close");
 			Console.ReadLine ();
-
         }
 	}
 }

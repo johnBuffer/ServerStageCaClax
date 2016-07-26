@@ -11,7 +11,6 @@ namespace IoTServer
 		{
 			var httpBaseAddress = new Uri("http://192.168.85.1:65201");
 
-
 			var sc = new WebServiceHost(typeof(IoTService), httpBaseAddress);
 		
 			sc.AddServiceEndpoint (typeof(IIoTService), new WebHttpBinding (), "");            
