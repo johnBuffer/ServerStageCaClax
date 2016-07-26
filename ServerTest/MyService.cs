@@ -16,10 +16,21 @@ namespace IoTServer
 			sc.AddServiceEndpoint (typeof(IIoTService), new WebHttpBinding (), "");            
 
 			//Open
-			sc.Open();
-			Console.WriteLine("Service is live now at : {0}", httpBaseAddress);
-			Console.ReadLine ();
-			sc.Close ();
+            try
+            {
+                sc.Open();
+                Console.WriteLine("Service is live now at : {0}", httpBaseAddress);
+                Console.ReadLine();
+            }
+			catch (CommunicationException e)
+            {
+                Console.WriteLine("An exception occured : {0}", e.Message);
+                sc.Abort();
+            }
+            finally
+            {
+                sc.Close();
+            }
 		}
 	}
 }
