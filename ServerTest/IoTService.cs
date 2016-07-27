@@ -16,7 +16,7 @@ namespace ServerTest
             return new ServiceReponse<string> { Result = true, Name = "GetEpochTime", Payload = DateTime.Now.ToString() };
         }
 
-        public ServiceReponse<bool> AddPing(int unitid, string date)
+        public ServiceReponse<bool> AddPing(int unitid)
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
