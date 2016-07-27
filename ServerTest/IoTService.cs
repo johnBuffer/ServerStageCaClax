@@ -22,7 +22,7 @@ namespace ServerTest
 
             try
             {
-                dbAccess.Connect();
+                dbAccess.InsertValue("pings", "Unit_ID", "Timestamp", unitid.ToString(), DateTime.Now.ToString());
             }
             catch (ConnectionErrorException e)
             {
@@ -30,17 +30,41 @@ namespace ServerTest
                 return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = false };
             }
 
-            try
+
+            // Check for pending actions
+            var pendingActions = dbAccess.Request("select ActionName from actions where Unit_ID='" + unitid.ToString() + "' and Status='PENDING'");
+
+            if (pendingActions.Read())
             {
-                dbAccess.InsertValue("pings", "Unit_ID", "Timestamp", unitid.ToString(), DateTime.Now.ToString());
-            }
-            catch (InsertionErrorException e)
-            {
-                Console.WriteLine("Connection error : {0}", e.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = false };
+                var action = pendingActions["ActionName"].ToString();
+                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action };
             }
 
             return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true };
+        }
+
+        public ServiceReponse<bool> AddAction(int unitid, string action)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            try
+            {
+                dbAccess.InsertValue("actions", "Unit_ID", "ActionName", "Status", unitid.ToString(), action, "PENDING");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Connection error : {0}", e.Message);
+                return new ServiceReponse<bool> { Result = true, Name = "AddAction", Payload = false };
+            }
+
+            return new ServiceReponse<bool> { Result = true, Name = "AddAction", Payload = true };
+        }
+
+        public ServiceReponse<bool> ActionDone(int actionId)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = true };
         }
     }
 }

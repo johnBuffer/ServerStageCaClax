@@ -14,5 +14,13 @@ namespace IoTServer
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
         ServiceReponse<bool> AddPing (int unitid);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<bool> AddAction(int unitid, string action);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<bool> ActionDone(int actionId);
     }
 }
