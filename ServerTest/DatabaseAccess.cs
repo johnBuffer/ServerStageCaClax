@@ -21,7 +21,7 @@ namespace ServerTest
         private string _port;
         private string _dataBaseName;
 
-        private MySqlConnection _connexion;
+        private MySqlConnection _connection;
 
         public DatabaseAccess(string ip, string port, string dataBaseName, string user, string password)
         {
@@ -31,14 +31,20 @@ namespace ServerTest
             _dataBaseName = dataBaseName;
             _password     = password;
 
-            _connexion = new MySqlConnection("Server=" + _ip + ";Port=" + _port + ";Database=" + _dataBaseName + ";Uid=" + _user + ";Pwd=" + _password + ";");
+            _connection = new MySqlConnection("Server=" + _ip + ";Port=" + _port + ";Database=" + _dataBaseName + ";Uid=" + _user + ";Pwd=" + _password + ";");
+            _connection.Close();
+        }
+
+        ~DatabaseAccess()
+        {
+            _connection.Close();
         }
 
         private void Connect()
         {
             try
             {
-                _connexion.Open();
+                _connection.Open();
             }
             catch (Exception e)
             {
@@ -63,7 +69,7 @@ namespace ServerTest
 
             Console.WriteLine(sql);
 
-            var cmd = new MySqlCommand(sql, _connexion);
+            var cmd = new MySqlCommand(sql, _connection);
 
             try
             {
@@ -78,7 +84,7 @@ namespace ServerTest
         public MySqlDataReader Request(string sqlRequest)
         {
             MySqlDataReader result;
-            var cmd = new MySqlCommand(sqlRequest, _connexion);
+            var cmd = new MySqlCommand(sqlRequest, _connection);
 
             try
             {
@@ -103,11 +109,11 @@ namespace ServerTest
                 throw (new ConnectionErrorException(e.Message));
             }
 
-            var sql = "update "+ tableName + " set " + column + " = '" + value + "'DONE' where ID = " + id;
+            var sql = "update "+ tableName + " set " + column + " = '" + value + "' where ID = '" + id + "';";
 
             Console.WriteLine(sql);
 
-            var cmd = new MySqlCommand(sql, _connexion);
+            var cmd = new MySqlCommand(sql, _connection);
 
             try
             {
