@@ -16,6 +16,7 @@ namespace ServerTest
             return new ServiceReponse<string> { Result = true, Name = "GetEpochTime", Payload = DateTime.Now.ToString() };
         }
 
+        // add a ping in the pings table
         public ServiceReponse<bool> AddPing(int unitid)
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
@@ -30,19 +31,20 @@ namespace ServerTest
                 return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = false };
             }
 
-
             // Check for pending actions
-            var pendingActions = dbAccess.Request("select ActionName from actions where Unit_ID='" + unitid.ToString() + "' and Status='PENDING'");
+            var pendingActions = dbAccess.Request("select ID, ActionName from actions where Unit_ID='" + unitid.ToString() + "' and Status='PENDING'");
 
             if (pendingActions.Read())
             {
                 var action = pendingActions["ActionName"].ToString();
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action };
+                var actionID = pendingActions["ID"].ToString();
+                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action, ActionID = actionID};
             }
 
             return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true };
         }
 
+        // add a pending action in the actions table
         public ServiceReponse<bool> AddAction(int unitid, string action)
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
@@ -60,10 +62,19 @@ namespace ServerTest
             return new ServiceReponse<bool> { Result = true, Name = "AddAction", Payload = true };
         }
 
-        public ServiceReponse<bool> ActionDone(int actionId)
+        // Update an action status to 'DONE'
+        public ServiceReponse<bool> ActionDone(string actionId)
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
-
+            try
+            {
+                dbAccess.Update("actions", actionId, "Status", "DONE");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Connection error : {0}", e.Message);
+                return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = false };
+            }
             return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = true };
         }
     }

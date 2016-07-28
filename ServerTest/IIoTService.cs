@@ -21,6 +21,6 @@ namespace IoTServer
 
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
-        ServiceReponse<bool> ActionDone(int actionId);
+        ServiceReponse<bool> ActionDone(string actionId);
     }
 }
