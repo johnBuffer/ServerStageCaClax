@@ -124,5 +124,29 @@ namespace ServerTest
                 throw (new SqlErrorException(e.Message));
             }
         }
+
+        public void ExecuteRequest(String request)
+        {
+            try
+            {
+                Connect();
+            }
+            catch (Exception e)
+            {
+                throw (new ConnectionErrorException(e.Message));
+            }
+
+            var cmd = new MySqlCommand(request, _connection);
+            Console.WriteLine(request);
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (MySqlException e)
+            {
+                throw (new SqlErrorException(e.Message));
+            }
+        }
     }
 }

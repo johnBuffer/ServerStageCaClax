@@ -1,5 +1,6 @@
 ﻿using IoTServer;
 using System;
+using System.Diagnostics;
 
 namespace ServerTest
 {
@@ -10,7 +11,7 @@ namespace ServerTest
         private string _dataBaseName = "test";
         private string _user = "Jean";
         private string _password = "Stageensuede1";
-        
+
         public ServiceReponse<string> GetEpochTime()
         {
             return new ServiceReponse<string> { Result = true, Name = "GetEpochTime", Payload = DateTime.Now.ToString() };
@@ -76,6 +77,54 @@ namespace ServerTest
                 return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = false };
             }
             return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = true };
+        }
+
+        // Add a measurement
+        public ServiceReponse<bool> AddTemperature(int unitid, int value)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            try
+            {
+                dbAccess.InsertValue("devices_state", "Feature_ID", "Device_ID", "Value", "Status", "Timestamp", "1", unitid.ToString(), value.ToString(), "OK", DateTime.Now.ToString());
+            }
+            catch (ConnectionErrorException e)
+            {
+                Console.WriteLine("Connection error : {0}", e.Message);
+                return new ServiceReponse<bool> { Result = true, Name = "AddTemperature", Payload = false };
+            }
+
+            var tempGoal = dbAccess.Request("select GoalValue from devices_features, features where devices_features.Feature_ID = features.ID and devices_features.Unit_ID = '" + unitid.ToString() + "'");
+
+            if (tempGoal.Read())
+            {
+                var goalValue = tempGoal["GoalValue"].ToString();
+                int intValue = Int32.Parse(goalValue);
+
+                if (value < intValue)
+                    AddAction(unitid, "RelayON");
+                else
+                    AddAction(unitid, "RelayOFF");
+            }
+
+            return new ServiceReponse<bool> { Result = true, Name = "AddTemperature", Payload = true };
+        }
+
+        public ServiceReponse<bool> SetTargetTemperature(int unitid, int value)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            try
+            {
+                dbAccess.ExecuteRequest("update features f inner join devices_features df on df.Feature_ID = f.ID and df.Unit_ID = '"+ unitid.ToString() + "' set GoalValue = '" + value.ToString() + "'");
+            }
+            catch (ConnectionErrorException e)
+            {
+                Console.WriteLine("Request error : {0}", e.Message);
+                return new ServiceReponse<bool> { Result = true, Name = "SetTargetTemperature", Payload = false };
+            }
+
+            return new ServiceReponse<bool> { Result = true, Name = "SetTargetTemperature", Payload = true };
         }
     }
 }

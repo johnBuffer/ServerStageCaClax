@@ -22,5 +22,13 @@ namespace IoTServer
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
         ServiceReponse<bool> ActionDone(string actionId);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<bool> AddTemperature(int unitid, int value);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<bool> SetTargetTemperature(int unitid, int value);
     }
 }
