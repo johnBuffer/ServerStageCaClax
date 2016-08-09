@@ -32,7 +32,15 @@ namespace ServerTest
             _password     = password;
 
             _connection = new MySqlConnection("Server=" + _ip + ";Port=" + _port + ";Database=" + _dataBaseName + ";Uid=" + _user + ";Pwd=" + _password + ";");
-            _connection.Close();
+
+            try
+            {
+                Connect();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         ~DatabaseAccess()
@@ -54,14 +62,7 @@ namespace ServerTest
 
         public void InsertValue(string tableName, params string[] values)
         {
-            try
-            {
-                Connect();
-            }
-            catch (Exception e)
-            {
-                throw (new ConnectionErrorException(e.Message));
-            }
+            
 
             var sql = "insert into "+tableName+" (";
             sql += Utils.ArrayToString(values, 0, values.Length / 2) + ") values (";
@@ -100,15 +101,6 @@ namespace ServerTest
 
         public void Update(string tableName, string id, string column, string value)
         {
-            try
-            {
-                Connect();
-            }
-            catch (Exception e)
-            {
-                throw (new ConnectionErrorException(e.Message));
-            }
-
             var sql = "update "+ tableName + " set " + column + " = '" + value + "' where ID = '" + id + "';";
 
             Console.WriteLine(sql);
@@ -127,15 +119,6 @@ namespace ServerTest
 
         public void ExecuteRequest(String request)
         {
-            try
-            {
-                Connect();
-            }
-            catch (Exception e)
-            {
-                throw (new ConnectionErrorException(e.Message));
-            }
-
             var cmd = new MySqlCommand(request, _connection);
             Console.WriteLine(request);
 

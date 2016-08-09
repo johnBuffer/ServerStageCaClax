@@ -39,7 +39,7 @@ namespace ServerTest
             {
                 var action = pendingActions["ActionName"].ToString();
                 var actionID = pendingActions["ID"].ToString();
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action, ActionID = actionID};
+                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action, ActionID = actionID };
             }
 
             return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true };
@@ -76,6 +76,50 @@ namespace ServerTest
                 Console.WriteLine("Connection error : {0}", e.Message);
                 return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = false };
             }
+
+            var actionNameRequest = dbAccess.Request("select ActionName from actions where ID = '" + actionId + "'");
+            string actionName = "";
+
+            if (actionNameRequest.Read())
+            {
+                actionName = actionNameRequest["ActionName"].ToString();
+                actionNameRequest.Close();
+            }
+
+            var unitidRequest = dbAccess.Request("select Unit_ID from actions where ID = '" + actionId + "'");
+            int unitid = -1;
+
+            if (unitidRequest.Read())
+            {
+                unitid = Int32.Parse(unitidRequest["Unit_ID"].ToString());
+                unitidRequest.Close();
+            }
+
+            if (object.Equals(actionName, "RelayON"))
+            {
+                try
+                {
+                    dbAccess.ExecuteRequest("update features f inner join devices_features df on df.Feature_ID = f.ID and df.Unit_ID = '" + unitid.ToString() + "' and f.Name = 'Relay' set State = 'ON'");
+                }
+                catch (ConnectionErrorException e)
+                {
+                    Console.WriteLine("Request error : {0}", e.Message);
+                    return new ServiceReponse<bool> { Result = true, Name = "SetTargetTemperature", Payload = false };
+                }
+            }
+            else if (object.Equals(actionName, "RelayOFF"))
+            {
+                try
+                {
+                    dbAccess.ExecuteRequest("update features f inner join devices_features df on df.Feature_ID = f.ID and df.Unit_ID = '" + unitid.ToString() + "' and f.Name = 'Relay' set State = 'OFF'");
+                }
+                catch (ConnectionErrorException e)
+                {
+                    Console.WriteLine("Request error : {0}", e.Message);
+                    return new ServiceReponse<bool> { Result = true, Name = "SetTargetTemperature", Payload = false };
+                }
+            }
+
             return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = true };
         }
 
@@ -101,10 +145,13 @@ namespace ServerTest
                 var goalValue = tempGoal["GoalValue"].ToString();
                 int intValue = Int32.Parse(goalValue);
 
-                if (value < intValue)
-                    AddAction(unitid, "RelayON");
-                else
-                    AddAction(unitid, "RelayOFF");
+                if (intValue > 10)
+                {
+                    if (value < intValue)
+                        AddAction(unitid, "RelayON");
+                    else
+                        AddAction(unitid, "RelayOFF");
+                }
             }
 
             return new ServiceReponse<bool> { Result = true, Name = "AddTemperature", Payload = true };
@@ -116,7 +163,7 @@ namespace ServerTest
 
             try
             {
-                dbAccess.ExecuteRequest("update features f inner join devices_features df on df.Feature_ID = f.ID and df.Unit_ID = '"+ unitid.ToString() + "' set GoalValue = '" + value.ToString() + "'");
+                dbAccess.ExecuteRequest("update features f inner join devices_features df on df.Feature_ID = f.ID and df.Unit_ID = '" + unitid.ToString() + "' and f.Name = 'Temperature sensor' set GoalValue = '" + value.ToString() + "'");
             }
             catch (ConnectionErrorException e)
             {
@@ -125,6 +172,112 @@ namespace ServerTest
             }
 
             return new ServiceReponse<bool> { Result = true, Name = "SetTargetTemperature", Payload = true };
+        }
+
+        public ServiceReponse<string> GetRelayStatus(int unitid)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            var relayStateRequest = dbAccess.Request("select State from devices_features, features where devices_features.Feature_ID = features.ID and devices_features.Unit_ID = '" + unitid.ToString() + "' and features.Name = 'Relay'");
+
+            if (relayStateRequest.Read())
+            {
+                var state = relayStateRequest["State"].ToString();
+                return new ServiceReponse<string> { Result = true, Name = "SetTargetTemperature", Payload = state };
+            }
+
+            return new ServiceReponse<string> { Result = true, Name = "SetTargetTemperature", Payload = "error" };
+        }
+
+        public ServiceReponse<TemperaturePoint> GetLastTemperature(int unitid)
+        {
+
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            var tempStateRequest = dbAccess.Request("SELECT Value, Timestamp FROM `devices_state` where Device_ID = '" + unitid.ToString() + "' and Feature_ID = '1'  ORDER BY `Timestamp` DESC");
+
+            if (tempStateRequest.Read())
+            {
+                var temp = tempStateRequest["Value"].ToString();
+                var date = tempStateRequest["Timestamp"].ToString();
+                return new ServiceReponse<TemperaturePoint> { Result = true, Name = "GetLastTemperature", Payload = new TemperaturePoint { Temperature = Int32.Parse(temp), Date = date } };
+            }
+
+            TemperaturePoint point = new TemperaturePoint { Temperature = 0, Date = DateTime.Now.ToString() };
+
+            return new ServiceReponse<TemperaturePoint> { Result = true, Name = "GetLastTemperature", Payload = point };
+        }
+
+        public ServiceReponse<string> GetLastPing(int unitid)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            var pingRequest = dbAccess.Request("SELECT Timestamp FROM `pings` where Unit_ID = '" + unitid.ToString() + "' ORDER BY `Timestamp` DESC");
+
+            if (pingRequest.Read())
+            {
+                var date = pingRequest["Timestamp"].ToString();
+                return new ServiceReponse<string> { Result = true, Name = "GetLastTemperature", Payload = date };
+            }
+
+            return new ServiceReponse<string> { Result = true, Name = "GetLastTemperature", Payload = "2000-01-01 00:00:00" };
+        }
+
+        public ServiceReponse<int> GetTargetTemperature(int unitid)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+            var tempGoal = dbAccess.Request("select GoalValue from devices_features, features where devices_features.Feature_ID = features.ID and devices_features.Unit_ID = '" + unitid.ToString() + "'");
+
+            if (tempGoal.Read())
+            {
+                var goalValue = tempGoal["GoalValue"].ToString();
+                int intValue = Int32.Parse(goalValue);
+
+                return new ServiceReponse<int> { Result = false, Name = "GetTargetTemperature", Payload = intValue };
+            }
+
+            return new ServiceReponse<int> { Result = false, Name = "GetTargetTemperature", Payload = 0 };
+        }
+
+        public ServiceReponse<bool> AddHumidity(int unitid, int value)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            try
+            {
+                dbAccess.InsertValue("devices_state", "Feature_ID", "Device_ID", "Value", "Status", "Timestamp", "3", unitid.ToString(), value.ToString(), "OK", DateTime.Now.ToString());
+            }
+            catch (ConnectionErrorException e)
+            {
+                Console.WriteLine("Connection error : {0}", e.Message);
+                return new ServiceReponse<bool> { Result = true, Name = "AddTemperature", Payload = false };
+            }
+
+            return new ServiceReponse<bool> { Result = true, Name = "AddTemperature", Payload = true };
+        }
+
+        public ServiceReponse<TemperaturePoint> GetLastHumidity(int unitid)
+        {
+
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            var tempStateRequest = dbAccess.Request("SELECT Value, Timestamp FROM `devices_state` where Device_ID = '" + unitid.ToString() + "' and Feature_ID = '3' ORDER BY `Timestamp` DESC");
+
+            if (tempStateRequest.Read())
+            {
+                var temp = tempStateRequest["Value"].ToString();
+                var date = tempStateRequest["Timestamp"].ToString();
+                return new ServiceReponse<TemperaturePoint> { Result = true, Name = "GetLastHumidity", Payload = new TemperaturePoint { Temperature = Int32.Parse(temp), Date = date } };
+            }
+
+            TemperaturePoint point = new TemperaturePoint { Temperature = 0, Date = DateTime.Now.ToString() };
+
+            return new ServiceReponse<TemperaturePoint> { Result = true, Name = "GetLastHumidity", Payload = point };
+        }
+
+        public ServiceReponse<int> AddHumidity(int unitid)
+        {
+            throw new NotImplementedException();
         }
     }
 }
