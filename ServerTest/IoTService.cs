@@ -124,13 +124,14 @@ namespace ServerTest
         }
 
         // Add a measurement
-        public ServiceReponse<bool> AddTemperature(int unitid, int value)
+        public ServiceReponse<bool> AddMeasure(int unitid, int temp, int humidity)
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
             try
             {
-                dbAccess.InsertValue("devices_state", "Feature_ID", "Device_ID", "Value", "Status", "Timestamp", "1", unitid.ToString(), value.ToString(), "OK", DateTime.Now.ToString());
+                dbAccess.InsertValue("devices_state", "Feature_ID", "Device_ID", "Value", "Status", "Timestamp", "1", unitid.ToString(), temp.ToString(), "OK", DateTime.Now.ToString());
+                dbAccess.InsertValue("devices_state", "Feature_ID", "Device_ID", "Value", "Status", "Timestamp", "3", unitid.ToString(), humidity.ToString(), "OK", DateTime.Now.ToString());
             }
             catch (ConnectionErrorException e)
             {
@@ -147,7 +148,7 @@ namespace ServerTest
 
                 if (intValue > 10)
                 {
-                    if (value < intValue)
+                    if (temp < intValue)
                         AddAction(unitid, "RelayON");
                     else
                         AddAction(unitid, "RelayOFF");
@@ -189,7 +190,7 @@ namespace ServerTest
             return new ServiceReponse<string> { Result = true, Name = "SetTargetTemperature", Payload = "error" };
         }
 
-        public ServiceReponse<TemperaturePoint> GetLastTemperature(int unitid)
+        public ServiceReponse<MeasurePoint> GetLastTemperature(int unitid)
         {
 
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
@@ -200,12 +201,12 @@ namespace ServerTest
             {
                 var temp = tempStateRequest["Value"].ToString();
                 var date = tempStateRequest["Timestamp"].ToString();
-                return new ServiceReponse<TemperaturePoint> { Result = true, Name = "GetLastTemperature", Payload = new TemperaturePoint { Temperature = Int32.Parse(temp), Date = date } };
+                return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastTemperature", Payload = new MeasurePoint { Value = Int32.Parse(temp), Date = date } };
             }
 
-            TemperaturePoint point = new TemperaturePoint { Temperature = 0, Date = DateTime.Now.ToString() };
+            MeasurePoint point = new MeasurePoint { Value = 0, Date = DateTime.Now.ToString() };
 
-            return new ServiceReponse<TemperaturePoint> { Result = true, Name = "GetLastTemperature", Payload = point };
+            return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastTemperature", Payload = point };
         }
 
         public ServiceReponse<string> GetLastPing(int unitid)
@@ -256,7 +257,7 @@ namespace ServerTest
             return new ServiceReponse<bool> { Result = true, Name = "AddTemperature", Payload = true };
         }
 
-        public ServiceReponse<TemperaturePoint> GetLastHumidity(int unitid)
+        public ServiceReponse<MeasurePoint> GetLastHumidity(int unitid)
         {
 
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
@@ -267,17 +268,12 @@ namespace ServerTest
             {
                 var temp = tempStateRequest["Value"].ToString();
                 var date = tempStateRequest["Timestamp"].ToString();
-                return new ServiceReponse<TemperaturePoint> { Result = true, Name = "GetLastHumidity", Payload = new TemperaturePoint { Temperature = Int32.Parse(temp), Date = date } };
+                return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastHumidity", Payload = new MeasurePoint { Value = Int32.Parse(temp), Date = date } };
             }
 
-            TemperaturePoint point = new TemperaturePoint { Temperature = 0, Date = DateTime.Now.ToString() };
+            MeasurePoint point = new MeasurePoint { Value = 0, Date = DateTime.Now.ToString() };
 
-            return new ServiceReponse<TemperaturePoint> { Result = true, Name = "GetLastHumidity", Payload = point };
-        }
-
-        public ServiceReponse<int> AddHumidity(int unitid)
-        {
-            throw new NotImplementedException();
+            return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastHumidity", Payload = point };
         }
     }
 }

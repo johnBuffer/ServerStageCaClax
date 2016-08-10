@@ -26,7 +26,7 @@ namespace IoTServer
 
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
-        ServiceReponse<bool> AddTemperature(int unitid, int value);
+        ServiceReponse<bool> AddMeasure(int unitid, int temp, int humidity);
 
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
@@ -38,7 +38,11 @@ namespace IoTServer
 
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
-        ServiceReponse<TemperaturePoint> GetLastTemperature(int unitid);
+        ServiceReponse<MeasurePoint> GetLastTemperature(int unitid);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<MeasurePoint> GetLastHumidity(int unitid);
 
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
@@ -47,9 +51,5 @@ namespace IoTServer
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
         ServiceReponse<int> GetTargetTemperature(int unitid);
-
-        [OperationContract]
-        [WebGet(ResponseFormat = WebMessageFormat.Json)]
-        ServiceReponse<int> AddHumidity(int unitid);
     }
 }
