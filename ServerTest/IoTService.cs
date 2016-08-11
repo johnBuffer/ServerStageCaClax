@@ -1,6 +1,8 @@
 ﻿using IoTServer;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.ServiceModel.Web;
 
 namespace ServerTest
 {
@@ -274,6 +276,39 @@ namespace ServerTest
             MeasurePoint point = new MeasurePoint { Value = 0, Date = DateTime.Now.ToString() };
 
             return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastHumidity", Payload = point };
+        }
+
+        public Stream Files(string filename)
+        {
+            Console.WriteLine("request file : "+filename);
+            Stream stream = (Stream)new FileStream(filename, FileMode.Open);
+
+            //Set the correct context type for the file requested.
+            int extIndex = filename.LastIndexOf(".");
+            string extension = filename.Substring(extIndex, filename.Length - extIndex);
+            switch (extension)
+            {
+                case ".html":
+                case ".htm":
+                    WebOperationContext.Current.OutgoingResponse.ContentType = "text/html";
+                    break;
+                case ".css":
+                    WebOperationContext.Current.OutgoingResponse.ContentType = "text/css";
+                    break;
+                case ".js":
+                    WebOperationContext.Current.OutgoingResponse.ContentType = "text/script";
+                    break;
+                case ".jpeg":
+                    WebOperationContext.Current.OutgoingResponse.ContentType = "image";
+                    break;
+                case ".png":
+                    WebOperationContext.Current.OutgoingResponse.ContentType = "image";
+                    break;
+                default:
+                    throw (new ApplicationException("File type not supported"));
+            }
+
+            return stream;
         }
     }
 }

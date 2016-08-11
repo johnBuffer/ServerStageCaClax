@@ -1,5 +1,6 @@
 using ServerTest;
 using System;
+using System.IO;
 using System.ServiceModel;
 using System.ServiceModel.Web;
 
@@ -8,7 +9,11 @@ namespace IoTServer
 	[ServiceContract]
 	public interface IIoTService
 	{
-		[OperationContract]
+        [OperationContract, WebGet(UriTemplate = "{filename}")]
+        //[WebGet(ResponseFormat = WebMessageFormat.Xml)]
+        Stream Files(string filename);
+
+        [OperationContract]
 		[WebGet(ResponseFormat = WebMessageFormat.Json)]
 		ServiceReponse<string> GetEpochTime ();
 

@@ -1,0 +1,193 @@
+* {
+
+}
+
+body {
+	background-color: #FFFFFF;
+}
+
+@font-face {
+    font-family: titleFont;
+    src: url(font.otf);
+}
+
+input[type=checkbox] {
+    display:none;
+}
+
+p {
+	font-size: 20px;
+}
+
+#mainTitle {	
+	top: 0px;
+	vertical-align: middle;
+	margin-bottom: 20px;
+	margin-top: 10px;
+	
+	font-size: 45px;
+	font-family: sans-serif;
+	color: #777777;
+	
+	display: inline-block;
+}
+
+#mainDiv {
+	max-width: 800px;
+	vertical-align: center;
+	margin: auto;
+}
+
+#relayToggle {
+	background-image: url("toggleOFF.png");
+	position:relative;
+	width: 81px;
+	height: 25px;
+	box-shadow: 0px 0px 5px #AAAAAA;
+	display: inline-block;
+	margin-right: 0;
+	margin-top: 12px;
+}
+
+#relayToggle:hover {
+	box-shadow: 0px 0px 10px #AAAAAA;
+}
+
+#pingStatus {
+	width: 48px;
+	height: 48px;
+	background-image: url("ledgreen.png");
+	transform:scale(0.5, 0.5);
+	display: inline-block;
+}
+
+#statusDisplay {
+	display: inline-block;
+	font-size: 20px;
+}
+
+#statusControl {
+	width: 250px;
+	vertical-align: middle;
+}
+
+#statusControl p {
+	display: inline-block;
+	margin-right: 10px;
+}
+
+#lastPingDisplay {
+	width: 150px;
+	margin-top: 15px;
+	font-size: 15px;
+}
+
+.section {
+	width: 100%;
+	margin-bottom: 10px;
+	box-shadow: 0px 0px 5px #AAAAAA;
+	border-radius: 5px;
+	background-color: #F9F9F9;
+}
+
+textarea {
+	background: transparent;
+	display: inline-block;
+	vertical-align: middle;
+	resize: none;
+	margin-bottom: 10px;
+	
+	border: none;
+	background-color: none;
+	margin-left: 10px;
+}
+
+.section:hover {
+	box-shadow: 0px 0px 15px #AAAAAA;
+	background-color: #F5F5F5;
+}
+
+.section .title{
+	vertical-align: top;
+	width: 47%;
+	
+	padding: 10px;
+	margin: 0;
+	
+	font-size: 25px;
+	font-family: sans-serif;
+	color: #777777;
+	
+	display: inline-block;
+}
+
+#currentTemp {
+	text-align: right;
+	margin-right:0;
+	font-size: 20px;
+	font-family: sans-serif;
+	color: #777777;
+}
+
+#currentHumidity {
+	text-align: right;
+	margin-right:0;
+	font-size: 20px;
+	font-family: sans-serif;
+	color: #777777;
+}
+
+.controlBlock {
+	width: 200px;
+	height: 100px;
+	
+	display: inline-block;
+	
+	padding: 10px;
+	margin: 10px;
+	margin-right: 0;
+	padding-left:15px;
+	
+	vertical-align: top;
+	border-left-style: solid;
+	border-color: #CCCCCC;
+}
+
+.controlBlock p {
+	vertical-align: top;
+	margin-top: 0px;
+	font-size: 20px;
+	font-family: sans-serif;
+	color: #777777;
+}
+
+#tempSelector {
+	display: inline-block;
+}
+
+#tempBlock {
+	width: 450px;
+}
+
+.controlBlock:hover {
+	border-color: #999999;
+}
+
+#temperatureDisplay {
+	display: inline-block;
+	margin: 0;
+	margin-left: 70px;
+	margin-top: 10px;
+	font-size: 70px;
+	color: #777777;
+}
+
+#toogleThermostat {
+	display: inline-block;
+	transform:scale(2, 2);
+	margin-left: 20px;
+}
+
+svg {
+	clear: left;
+}

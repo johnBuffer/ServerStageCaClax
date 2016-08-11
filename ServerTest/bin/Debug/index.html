@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="style.css" />
+		<title>Mobile client</title>
+		<script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+		<script src="script.js"></script>
+	</head>
+	
+	<body>
+		<div id="mainDiv">
+			<p id="mainTitle">My device configuration</p>
+			<div class="section">
+				<div class = "controlBlock">
+					<p>Relay</p>
+					<div id="relayToggle" onclick="toggleRelay()">
+						<input type="checkbox" id="toggleCheckBox">
+					</div>
+				</div>
+				<div class = "controlBlock" id="statusControl">
+					<p>Status :  </p>
+					<p id="statusDisplay">online</p>
+					</br>
+					<div id="pingStatus"></div>
+					<p id="lastPingDisplay">--</p>
+					
+				</div>
+				<textarea rows="7" cols="30" id="logArea">
+				</textarea>
+			</div>
+			
+			<div id="thermostatControl" class="section">
+				<div class = "controlBlock">
+					<p>Thermostat</p>
+					<input type="checkbox" id="toogleThermostat" onclick="toggleThermostat()" checked="true" >
+				</div>
+				<div class = "controlBlock" id="tempBlock">
+					<div id="tempSelector">
+						<p>Temperature</p>
+						<input type="range" id="temperatureRange" min="20" max="50" oninput="updateTemperature(this.value)">
+					</div>
+					<p id="temperatureDisplay">--</p>
+				</div>
+			</div>
+			<div id="chart" class="section" onclick="showSVG(this)">
+				<p class="title">Temperature history</p><p class="title" id="currentTemp">--</p>
+				<script src="temperatureChart.js"></script>
+			</div>
+			<div id="chartHumidity" class="section" onclick="showSVG_h(this)">
+				<p class="title">Humidity history</p><p class="title" id="currentHumidity">--</p>
+				<script src="humidityChart.js"></script>
+			</div>
+		</div>
+	</body>
+</html>
