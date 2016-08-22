@@ -62,8 +62,6 @@ namespace ServerTest
 
         public void InsertValue(string tableName, params string[] values)
         {
-            
-
             var sql = "insert into "+tableName+" (";
             sql += Utils.ArrayToString(values, 0, values.Length / 2) + ") values (";
             sql += Utils.ArrayToString(values, values.Length / 2, values.Length, true) + ")";
@@ -80,6 +78,10 @@ namespace ServerTest
             {
                 throw (new SqlErrorException(e.Message));
             }
+            catch (System.InvalidOperationException se)
+            {
+                throw (new InvalidOperationException(se.Message));
+            }
         }
 
         public MySqlDataReader Request(string sqlRequest)
@@ -94,6 +96,10 @@ namespace ServerTest
             catch (MySqlException e)
             {
                 throw (new SqlErrorException(e.Message));
+            }
+            catch (InvalidOperationException se)
+            {
+                throw (new InvalidOperationException(se.Message));
             }
 
             return result;

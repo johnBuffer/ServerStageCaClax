@@ -8,9 +8,9 @@ namespace ServerTest
 {
     class Utils
     {
-        public static string ArrayToString(string[] array, int firstIndex, int lastIndex, bool quotation=false)
+        public static string ArrayToString(string[] array, int firstIndex, int lastIndex, bool quotation = false)
         {
-            string result  = "";
+            string result = "";
             for (int i = firstIndex; i < lastIndex; i++)
             {
                 if (quotation)

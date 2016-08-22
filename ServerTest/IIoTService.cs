@@ -9,9 +9,9 @@ namespace IoTServer
 	[ServiceContract]
 	public interface IIoTService
 	{
-        [OperationContract, WebGet(UriTemplate = "{filename}")]
+        /*[OperationContract, WebGet(UriTemplate = "{filename}")]
         //[WebGet(ResponseFormat = WebMessageFormat.Xml)]
-        Stream Files(string filename);
+        Stream Files(string filename);*/
 
         [OperationContract]
 		[WebGet(ResponseFormat = WebMessageFormat.Json)]
@@ -56,5 +56,21 @@ namespace IoTServer
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
         ServiceReponse<int> GetTargetTemperature(int unitid);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<bool> SetThermostatState(int unitid, int state);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<string> GetThermostatState(int unitid);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<bool> NotifyChange(int unitid, int value);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        bool SaveChanges(int unitid);
     }
 }
