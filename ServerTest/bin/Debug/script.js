@@ -132,32 +132,32 @@ function showSVG_h() {
 }
 
 function addAction(type) {
-	var url = "http://127.0.0.1:65201/AddAction?unitid=1&action="+type;
+	var url = "http://79.142.244.131:65201/AddAction?unitid=1&action="+type;
 	httpGet(url, getCallback);
 }
 
 function setTargetTemperature(value) {
-	var url = "http://127.0.0.1:65201/SetTargetTemperature?unitid=1&value="+value;
+	var url = "http://79.142.244.131:65201/SetTargetTemperature?unitid=1&value="+value;
 	httpGet(url, getCallback);
 }
 
 function getRelayStatus() {
-	var url = "http://127.0.0.1:65201/GetRelayStatus?unitid=1";
+	var url = "http://79.142.244.131:65201/GetRelayStatus?unitid=1";
 	httpGet(url, setRelayToggle);
 }
 
 function getTemperature() {
-	var url = "http://127.0.0.1:65201/GetLastTemperature?unitid=1";
+	var url = "http://79.142.244.131:65201/GetLastTemperature?unitid=1";
 	httpGet(url, addTemperature);
 }
 
 function getHumidity() {
-	var url = "http://127.0.0.1:65201/GetLastHumidity?unitid=1";
+	var url = "http://79.142.244.131:65201/GetLastHumidity?unitid=1";
 	httpGet(url, addHumidity);
 }
 
 function getTargetTemperature() {
-	var url = "http://127.0.0.1:65201/GetTargetTemperature?unitid=1";
+	var url = "http://79.142.244.131:65201/GetTargetTemperature?unitid=1";
 	httpGet(url, jsonToValue);
 }
 
@@ -167,7 +167,7 @@ function jsonToValue(json) {
 }
 
 function getLastPing() {
-	var url = "http://127.0.0.1:65201/GetLastPing?unitid=1";
+	var url = "http://79.142.244.131:65201/GetLastPing?unitid=1";
 	httpGet(url, updatePing);
 }
 

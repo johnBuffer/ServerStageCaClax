@@ -580,7 +580,17 @@ namespace ServerTest
         /*public Stream Files(string filename)
         {
             Console.WriteLine("request file : "+filename);
-            Stream stream = (Stream)new FileStream(filename, FileMode.Open);
+
+            Stream stream = null;
+
+            try
+            {
+                stream = (Stream)new FileStream(filename, FileMode.Open);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
             //Set the correct context type for the file requested.
             int extIndex = filename.LastIndexOf(".");
@@ -604,7 +614,8 @@ namespace ServerTest
                     WebOperationContext.Current.OutgoingResponse.ContentType = "image";
                     break;
                 default:
-                    throw (new ApplicationException("File type not supported"));
+                    Console.WriteLine("File not supported");
+                    break;
             }
 
             return stream;
