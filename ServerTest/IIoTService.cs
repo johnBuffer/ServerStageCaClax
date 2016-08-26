@@ -27,6 +27,10 @@ namespace IoTServer
 
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
+        ServiceReponse<string> ChangeProgram(int unitid, string action);
+
+        [OperationContract]
+        [WebGet(ResponseFormat = WebMessageFormat.Json)]
         ServiceReponse<bool> ActionDone(string actionId);
 
         [OperationContract]
@@ -71,6 +75,6 @@ namespace IoTServer
 
         [OperationContract]
         [WebGet(ResponseFormat = WebMessageFormat.Json)]
-        bool SaveChanges(int unitid);
+        ServiceReponse<bool> SaveChanges(int unitid);
     }
 }

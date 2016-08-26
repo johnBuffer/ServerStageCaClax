@@ -101,6 +101,24 @@ namespace ServerTest
             return new ServiceReponse<bool> { Result = true, Name = "AddAction", Payload = true };
         }
 
+        // Add a update program action, basically the same as add action but return a string payload with the program
+        public ServiceReponse<string> ChangeProgram(int unitid, string program)
+        {
+            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
+
+            try
+            {
+                dbAccess.InsertValue("actions", "Unit_ID", "ActionName", "Status", unitid.ToString(), "UpdateProgram", "PENDING");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Connection error : {0}", e.Message);
+                return new ServiceReponse<string> { Result = true, Name = "AddAction", Payload = null };
+            }
+
+            return new ServiceReponse<string> { Result = true, Name = "AddAction", Payload = program };
+        }
+
         // Update an action status to 'DONE'
         public ServiceReponse<bool> ActionDone(string actionId)
         {
@@ -447,7 +465,7 @@ namespace ServerTest
             return new ServiceReponse<bool> { Result = true, Name = "NotifyChange", Payload = true };
         }
 
-        public bool SaveChanges(int unitid)
+        public ServiceReponse<bool> SaveChanges(int unitid)
         {
             string result = InsertLine(unitid);
             List<string> text = new List<string>();
@@ -463,7 +481,14 @@ namespace ServerTest
             string path = @"C:\Users\dev1\Documents\Thermostat_programs\today_program";
             File.WriteAllLines(path, text);
 
-            return true;
+            string oneLineProgram = "";
+            foreach(string elt in text)
+            {
+                oneLineProgram = oneLineProgram + elt + ";";
+            }
+
+            ChangeProgram(unitid, oneLineProgram);
+            return new ServiceReponse<bool> { Result = true, Name = "SaveChanges", Payload = true};
         }
 
         public string InsertLine(int unitid)
