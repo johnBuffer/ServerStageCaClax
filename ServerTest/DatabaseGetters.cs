@@ -30,6 +30,7 @@ namespace ServerTest
                 else { payload = "OFF"; }
             }
 
+            tempStateRequest.Close();
             return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = payload };
         }
 
@@ -56,6 +57,8 @@ namespace ServerTest
                 point.Date = date;
             }
 
+            tempStateRequest.Close();
+
             return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastTemperature", Payload = point };
         }
 
@@ -80,6 +83,8 @@ namespace ServerTest
                 return new ServiceReponse<int> { Result = true, Name = "GetTargetTemperature", Payload = intValue };
             }
 
+            tempTarget.Close();
+
             return new ServiceReponse<int> { Result = false, Name = "GetTargetTemperature", Payload = 0 };
         }
 
@@ -101,6 +106,8 @@ namespace ServerTest
                 var state = relayStateRequest["State"].ToString();
                 return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = state };
             }
+
+            relayStateRequest.Close();
 
             return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = "error" };
         }
