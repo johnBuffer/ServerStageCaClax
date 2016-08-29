@@ -33,6 +33,7 @@ namespace ServerTest
             {
                 var action = pendingActions["ActionName"].ToString();
                 var actionID = pendingActions["ID"].ToString();
+                pendingActions.Close();
                 return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action, ActionID = actionID };
             }
 
