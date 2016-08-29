@@ -25,62 +25,7 @@ namespace ServerTest
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
-            try
-            {
-                dbAccess.InsertValue("pings", "Unit_ID", "Timestamp", unitid.ToString(), DateTime.Now.ToString());
-            }
-            catch (ConnectionErrorException e)
-            {
-                Console.WriteLine("Connection error : {0}", e.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = false };
-            }
-            catch (InvalidOperationException se)
-            {
-                Console.WriteLine("Connection error : {0}", se.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = false };
-            }
-
-            // Check for pending actions
-            var pendingActions = dbAccess.Request("select ID, ActionName from actions where Unit_ID='" + unitid.ToString() + "' and Status='PENDING'");
-
-            if (pendingActions.Read())
-            {
-                var action = pendingActions["ActionName"].ToString();
-                var actionID = pendingActions["ID"].ToString();
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action, ActionID = actionID };
-            }
-
-            //Check for changes in the programm
-            int temperature = ReadProgram();
-            if (temperature != -1)
-            {
-                SetTargetTemperature(unitid, temperature);
-            }
-
-            // Check for thermostat actions
-            if (GetThermostatState(unitid).Payload == "ON")
-            {
-                var currentTemp = GetLastTemperature(unitid).Payload.Value;
-                var targetTemp = GetTargetTemperature(unitid).Payload;
-                var relayState = GetRelayStatus(unitid).Payload;
-
-                if(currentTemp < targetTemp)
-                {
-                    if(relayState != "ON")
-                    {
-                        AddAction(unitid, "RelayON");
-                    }
-                }
-                else
-                {
-                    if(relayState != "OFF")
-                    {
-                        AddAction(unitid, "RelayOFF");
-                    }
-                }
-            }
-
-            return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true };
+            return PingManager.HandlePing(this, dbAccess, unitid);
         }
 
         // add a pending action in the actions table
@@ -251,48 +196,14 @@ namespace ServerTest
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
-            try
-            {
-                var relayStateRequest = dbAccess.Request("select State from features where Unit_ID = '" + unitid.ToString() + "' and Name = 'Relay'"); //GetRelayStatus
-
-                if (relayStateRequest.Read())
-                {
-                    var state = relayStateRequest["State"].ToString();
-                    return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = state };
-                }
-            }
-            catch (InvalidOperationException e)
-            {
-                Console.WriteLine("Error while getting relay status : {0}", e.Message);
-                return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = "error" };
-            }
-
-            return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = "error" };
+            return DatabaseGetters.GetRelayStatus(dbAccess, unitid);
         }
 
         public ServiceReponse<MeasurePoint> GetLastTemperature(int unitid)
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
-            MeasurePoint point = new MeasurePoint { Value = 0, Date = DateTime.Now.ToString() };
-
-            try
-            {
-                var tempStateRequest = dbAccess.Request("SELECT Value, Timestamp FROM `measurements` where Unit_ID = '" + unitid.ToString() + "' and Feature_ID = '1'  ORDER BY `Timestamp` DESC"); //GetLastTemperature
-
-                if (tempStateRequest.Read())
-                {
-                    var temp = tempStateRequest["Value"].ToString();
-                    var date = tempStateRequest["Timestamp"].ToString();
-                    return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastTemperature", Payload = new MeasurePoint { Value = Int32.Parse(temp), Date = date } };
-                }
-            }
-            catch (InvalidOperationException e)
-            {
-                Console.WriteLine(e.Message);
-            }
-
-            return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastTemperature", Payload = point };
+            return DatabaseGetters.GetLastTemperature(dbAccess, unitid);
         }
 
         public ServiceReponse<string> GetLastPing(int unitid)
@@ -322,26 +233,7 @@ namespace ServerTest
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
-            try
-            {
-                var tempGoal = dbAccess.Request("select GoalValue from features where Unit_ID = '" + unitid.ToString() + "' and Name = 'Thermostat'"); //GetTargetTemperature
-
-                if (tempGoal.Read())
-                {
-                    var goalValue = tempGoal["GoalValue"].ToString();
-                    int intValue = Int32.Parse(goalValue);
-
-                    return new ServiceReponse<int> { Result = false, Name = "GetTargetTemperature", Payload = intValue };
-                }
-            }
-            catch (InvalidOperationException se)
-            {
-                Console.WriteLine("Error getting target temperature : {0}", se.Message);
-                return new ServiceReponse<int> { Result = true, Name = "GetTargetTemperature", Payload = 0 };
-            }
-
-
-            return new ServiceReponse<int> { Result = false, Name = "GetTargetTemperature", Payload = 0 };
+            return DatabaseGetters.GetTargetTemperature(dbAccess, unitid);
         }
 
         public ServiceReponse<MeasurePoint> GetLastHumidity(int unitid)
@@ -415,32 +307,8 @@ namespace ServerTest
         public ServiceReponse<string> GetThermostatState(int unitid)
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
-            
-            try
-            {
-                var tempStateRequest = dbAccess.Request("select State from features where Unit_ID = '" + unitid.ToString() + "' and Name = 'Thermostat'");
 
-                if (tempStateRequest.Read())
-                {
-                    string state = tempStateRequest["State"].ToString();
-
-                    if (state == "ON")
-                    {
-                        return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = "ON" };
-                    }
-                    else
-                    {
-                        return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = "OFF" };
-                    }
-                }
-            }
-            catch (InvalidOperationException se)
-            {
-                Console.WriteLine("Error getting thermostat state : {0}", se.Message);
-                return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = "error" };
-            }
-
-            return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = "error" };
+            return DatabaseGetters.GetThermostatState(dbAccess, unitid);
         }
 
         public ServiceReponse<bool> NotifyChange(int unitid, int value)
