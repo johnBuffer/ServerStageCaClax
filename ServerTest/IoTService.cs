@@ -69,65 +69,7 @@ namespace ServerTest
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
-            try
-            {
-                dbAccess.Update("actions", actionId, "Status", "DONE");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Connection error : {0}", e.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = false };
-            }
-
-            var actionNameRequest = dbAccess.Request("select ActionName from actions where ID = '" + actionId + "'");
-            string actionName = "";
-
-            if (actionNameRequest.Read())
-            {
-                actionName = actionNameRequest["ActionName"].ToString();
-                actionNameRequest.Close();
-            }
-
-            var unitidRequest = dbAccess.Request("select Unit_ID from actions where ID = '" + actionId + "'");
-            int unitid = -1;
-
-            if (unitidRequest.Read())
-            {
-                unitid = Int32.Parse(unitidRequest["Unit_ID"].ToString());
-                unitidRequest.Close();
-            }
-
-            if (object.Equals(actionName, "RelayON"))
-            {
-                try
-                {
-                    dbAccess.ExecuteRequest("update features f set State = 'ON' where Unit_ID = '" + unitid.ToString() + "' and Name = 'Relay'"); //Action done set relay ON
-                }
-                catch (ConnectionErrorException e)
-                {
-                    Console.WriteLine("Request error : {0}", e.Message);
-                    return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = false };
-                }
-            }
-            else if (object.Equals(actionName, "RelayOFF"))
-            {
-                try
-                {
-                    dbAccess.ExecuteRequest("update features f set State = 'OFF' where Unit_ID = '" + unitid.ToString() + "' and Name = 'Relay'"); //Action done set relay OFF
-                }
-                catch (ConnectionErrorException e)
-                {
-                    Console.WriteLine("Request error : {0}", e.Message);
-                    return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = false };
-                }
-                catch(InvalidOperationException se)
-                {
-                    Console.WriteLine("Error in action done : {0}", se.Message);
-                    return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = false };
-                }
-            }
-
-            return new ServiceReponse<bool> { Result = true, Name = "ActionDone", Payload = true };
+            return ActionManager.SetActionDone(dbAccess, actionId);
         }
 
         // Add a measurement
@@ -135,39 +77,7 @@ namespace ServerTest
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
-            try
-            {
-                dbAccess.InsertValue("measurements", "Feature_ID", "Unit_ID", "Type", "Value", "Status", "Timestamp", "1", unitid.ToString(), "Temperature", temp.ToString(), "OK", DateTime.Now.ToString()); //AddMeasure temperature
-                dbAccess.InsertValue("measurements", "Feature_ID", "Unit_ID", "Type", "Value", "Status", "Timestamp", "1", unitid.ToString(), "Temperature", humidity.ToString(), "OK", DateTime.Now.ToString()); //AddMeasure humidity
-            }
-            catch (ConnectionErrorException e)
-            {
-                Console.WriteLine("Connection error : {0}", e.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = false };
-            }
-            catch (InvalidOperationException se)
-            {
-                Console.WriteLine("Error adding measure : {0}", se.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = false };
-            }
-
-            var tempGoal = dbAccess.Request("select GoalValue from features where Unit_ID = '" + unitid.ToString() + "' and Name = 'Relay'"); //AddMeasure
-
-            if (tempGoal.Read())
-            {
-                var goalValue = tempGoal["GoalValue"].ToString();
-                int intValue = Int32.Parse(goalValue);
-
-                if (intValue > 10)
-                {
-                    if (temp < intValue)
-                        AddAction(unitid, "RelayON");
-                    else
-                        AddAction(unitid, "RelayOFF");
-                }
-            }
-
-            return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = true };
+            return PingManager.AddMeasure(this, dbAccess, unitid, temp, humidity);
         }
 
         public ServiceReponse<bool> SetTargetTemperature(int unitid, int value)

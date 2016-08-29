@@ -71,5 +71,42 @@ namespace ServerTest
 
             return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true };
         }
+
+        public static ServiceReponse<bool> AddMeasure(IoTService iotService, DatabaseAccess dbAccess, int unitid, int temp, int humidity)
+        {
+            try
+            {
+                dbAccess.InsertValue("measurements", "Feature_ID", "Unit_ID", "Type", "Value", "Status", "Timestamp", "1", unitid.ToString(), "Temperature", temp.ToString(), "OK", DateTime.Now.ToString()); //AddMeasure temperature
+                dbAccess.InsertValue("measurements", "Feature_ID", "Unit_ID", "Type", "Value", "Status", "Timestamp", "1", unitid.ToString(), "Temperature", humidity.ToString(), "OK", DateTime.Now.ToString()); //AddMeasure humidity
+            }
+            catch (ConnectionErrorException e)
+            {
+                Console.WriteLine("Connection error : {0}", e.Message);
+                return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = false };
+            }
+            catch (InvalidOperationException se)
+            {
+                Console.WriteLine("Error adding measure : {0}", se.Message);
+                return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = false };
+            }
+
+            var tempGoal = dbAccess.Request("select GoalValue from features where Unit_ID = '" + unitid.ToString() + "' and Name = 'Relay'"); //AddMeasure
+
+            if (tempGoal.Read())
+            {
+                var goalValue = tempGoal["GoalValue"].ToString();
+                int intValue = Int32.Parse(goalValue);
+
+                if (object.Equals(DatabaseGetters.GetThermostatState(dbAccess, unitid).Payload, "ON"))
+                {
+                    if (temp < intValue)
+                        iotService.AddAction(unitid, "RelayON");
+                    else
+                        iotService.AddAction(unitid, "RelayOFF");
+                }
+            }
+
+            return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = true };
+        }
     }
 }
