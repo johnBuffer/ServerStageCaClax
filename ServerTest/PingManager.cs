@@ -36,6 +36,8 @@ namespace ServerTest
                 return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action, ActionID = actionID };
             }
 
+            pendingActions.Close();
+
             //Check for changes in the programm
             /*int temperature = ReadProgram();
             if (temperature != -1)
