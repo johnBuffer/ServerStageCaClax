@@ -80,6 +80,7 @@ namespace ServerTest
             {
                 var goalValue = tempTarget["GoalValue"].ToString();
                 int intValue = Int32.Parse(goalValue);
+                tempTarget.Close();
                 return new ServiceReponse<int> { Result = true, Name = "GetTargetTemperature", Payload = intValue };
             }
 
@@ -110,6 +111,51 @@ namespace ServerTest
             relayStateRequest.Close();
 
             return new ServiceReponse<string> { Result = true, Name = "GetRelayStatus", Payload = "error" };
+        }
+
+        public static ServiceReponse<string> GetlastPing(DatabaseAccess dbAccess, int unitid)
+        {
+            try
+            {
+                var pingRequest = dbAccess.Request("SELECT Timestamp FROM `pings` where Unit_ID = '" + unitid.ToString() + "' ORDER BY `Timestamp` DESC");
+
+                if (pingRequest.Read())
+                {
+                    var date = pingRequest["Timestamp"].ToString();
+                    return new ServiceReponse<string> { Result = true, Name = "GetLastTemperature", Payload = date };
+                }
+            }
+            catch (InvalidOperationException e)
+            {
+                Console.WriteLine("Error getting last ping : {0}", e.Message);
+                return new ServiceReponse<string> { Result = true, Name = "GetLastPing", Payload = "2000-01-01 00:00:00" };
+            }
+
+            return new ServiceReponse<string> { Result = true, Name = "GetLastPing", Payload = "2000-01-01 00:00:00" };
+        }
+
+        public static ServiceReponse<MeasurePoint> GetLastHumidity(DatabaseAccess dbAccess, int unitid)
+        {
+            MeasurePoint point = new MeasurePoint { Value = 0, Date = DateTime.Now.ToString() };
+
+            try
+            {
+                var tempStateRequest = dbAccess.Request("SELECT Value, Timestamp FROM `measurements` where Unit_ID = '" + unitid.ToString() + "' and Feature_ID = '3' ORDER BY `Timestamp` DESC"); //GetLastHumidity
+
+                if (tempStateRequest.Read())
+                {
+                    var temp = tempStateRequest["Value"].ToString();
+                    var date = tempStateRequest["Timestamp"].ToString();
+                    return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastHumidity", Payload = new MeasurePoint { Value = Int32.Parse(temp), Date = date } };
+                }
+            }
+            catch (InvalidOperationException se)
+            {
+                Console.WriteLine("Error getting last humidity : {0}", se.Message);
+                return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastHumidity", Payload = point };
+            }
+
+            return new ServiceReponse<MeasurePoint> { Result = true, Name = "GetLastHumidity", Payload = point };
         }
     }
 }
