@@ -28,6 +28,8 @@ namespace ServerTest
 
                 if (state == "ON") { payload = "ON"; }
                 else { payload = "OFF"; }
+
+                tempStateRequest.Close();
             }
 
             tempStateRequest.Close();

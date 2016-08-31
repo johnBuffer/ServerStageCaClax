@@ -121,7 +121,7 @@ namespace ServerTest
             try
             {
                 dbAccess.InsertValue("measurements", "Feature_ID", "Unit_ID", "Type", "Value", "Status", "Timestamp", "1", unitid.ToString(), "Temperature", temp.ToString(), "OK", DateTime.Now.ToString()); //AddMeasure temperature
-                dbAccess.InsertValue("measurements", "Feature_ID", "Unit_ID", "Type", "Value", "Status", "Timestamp", "1", unitid.ToString(), "Temperature", humidity.ToString(), "OK", DateTime.Now.ToString()); //AddMeasure humidity
+                dbAccess.InsertValue("measurements", "Feature_ID", "Unit_ID", "Type", "Value", "Status", "Timestamp", "1", unitid.ToString(), "Humidity", humidity.ToString(), "OK", DateTime.Now.ToString()); //AddMeasure humidity
             }
             catch (ConnectionErrorException e)
             {
@@ -140,6 +140,7 @@ namespace ServerTest
             {
                 var goalValue = tempGoal["GoalValue"].ToString();
                 int intValue = Int32.Parse(goalValue);
+                tempGoal.Close();
 
                 if (object.Equals(DatabaseGetters.GetThermostatState(dbAccess, unitid).Payload, "ON"))
                 {
@@ -150,6 +151,7 @@ namespace ServerTest
                 }
             }
 
+            tempGoal.Close();
             return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = true };
         }
     }
