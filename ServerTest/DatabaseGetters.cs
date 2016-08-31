@@ -43,7 +43,7 @@ namespace ServerTest
 
             try
             {
-                tempStateRequest = dbAccess.Request("SELECT Value, Timestamp FROM `measurements` where Unit_ID = '" + unitid.ToString() + "' and Feature_ID = '1'  ORDER BY `Timestamp` DESC"); //GetLastTemperature
+                tempStateRequest = dbAccess.Request("SELECT Value, Timestamp FROM `measurements` where Unit_ID = '" + unitid.ToString() + "' and Type = 'Temperature'  ORDER BY `Timestamp` DESC"); //GetLastTemperature
             }
             catch (InvalidOperationException e)
             {
@@ -142,7 +142,7 @@ namespace ServerTest
 
             try
             {
-                var tempStateRequest = dbAccess.Request("SELECT Value, Timestamp FROM `measurements` where Unit_ID = '" + unitid.ToString() + "' and Feature_ID = '3' ORDER BY `Timestamp` DESC"); //GetLastHumidity
+                var tempStateRequest = dbAccess.Request("SELECT Value, Timestamp FROM `measurements` where Unit_ID = '" + unitid.ToString() + "' and Type = 'Humidity' ORDER BY `Timestamp` DESC"); //GetLastHumidity
 
                 if (tempStateRequest.Read())
                 {
