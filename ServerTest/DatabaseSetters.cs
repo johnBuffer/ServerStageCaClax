@@ -134,24 +134,27 @@ namespace ServerTest
                 return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = false };
             }
 
-            var tempGoal = dbAccess.Request("select GoalValue from features where Unit_ID = '" + unitid.ToString() + "' and Name = 'Relay'"); //AddMeasure
-
-            if (tempGoal.Read())
+            if (object.Equals(DatabaseGetters.GetThermostatState(dbAccess, unitid).Payload, "ON"))
             {
-                var goalValue = tempGoal["GoalValue"].ToString();
-                int intValue = Int32.Parse(goalValue);
-                tempGoal.Close();
+                var targetTemp = DatabaseGetters.GetTargetTemperature(dbAccess, unitid).Payload;
+                var relayState = DatabaseGetters.GetRelayStatus(dbAccess, unitid).Payload;
 
-                if (object.Equals(DatabaseGetters.GetThermostatState(dbAccess, unitid).Payload, "ON"))
+                if (temp < targetTemp)
                 {
-                    if (temp < intValue)
+                    if (!object.Equals(relayState, "ON"))
+                    {
                         iotService.AddAction(unitid, "RelayON");
-                    else
+                    }
+                }
+                else
+                {
+                    if (!object.Equals(relayState, "OFF"))
+                    {
                         iotService.AddAction(unitid, "RelayOFF");
+                    }
                 }
             }
 
-            tempGoal.Close();
             return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = true };
         }
     }

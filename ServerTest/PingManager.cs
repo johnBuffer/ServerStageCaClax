@@ -47,27 +47,6 @@ namespace ServerTest
             }*/
 
             // Check for thermostat actions
-            if (object.Equals(DatabaseGetters.GetThermostatState(dbAccess, unitid).Payload, "ON"))
-            {
-                var currentTemp = DatabaseGetters.GetLastTemperature(dbAccess, unitid).Payload.Value;
-                var targetTemp = DatabaseGetters.GetTargetTemperature(dbAccess, unitid).Payload;
-                var relayState = DatabaseGetters.GetRelayStatus(dbAccess, unitid).Payload;
-
-                if (currentTemp < targetTemp)
-                {
-                    if (!object.Equals(relayState, "ON"))
-                    {
-                        iotService.AddAction(unitid, "RelayON");
-                    }
-                }
-                else
-                {
-                    if (!object.Equals(relayState, "OFF"))
-                    {
-                        iotService.AddAction(unitid, "RelayOFF");
-                    }
-                }
-            }
 
             return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true };
         }
