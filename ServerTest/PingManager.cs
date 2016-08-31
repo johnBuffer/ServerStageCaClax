@@ -47,7 +47,7 @@ namespace ServerTest
             }*/
 
             // Check for thermostat actions
-            if (DatabaseGetters.GetThermostatState(dbAccess, unitid).Payload == "ON")
+            if (object.Equals(DatabaseGetters.GetThermostatState(dbAccess, unitid).Payload, "ON"))
             {
                 var currentTemp = DatabaseGetters.GetLastTemperature(dbAccess, unitid).Payload.Value;
                 var targetTemp = DatabaseGetters.GetTargetTemperature(dbAccess, unitid).Payload;
