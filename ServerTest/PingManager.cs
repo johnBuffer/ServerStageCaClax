@@ -55,14 +55,14 @@ namespace ServerTest
 
                 if (currentTemp < targetTemp)
                 {
-                    if (relayState != "ON")
+                    if (!object.Equals(relayState, "ON"))
                     {
                         iotService.AddAction(unitid, "RelayON");
                     }
                 }
                 else
                 {
-                    if (relayState != "OFF")
+                    if (!object.Equals(relayState, "OFF"))
                     {
                         iotService.AddAction(unitid, "RelayOFF");
                     }
