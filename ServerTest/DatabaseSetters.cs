@@ -21,21 +21,6 @@ namespace ServerTest
             return new ServiceReponse<bool> { Result = true, Name = "AddAction", Payload = true };
         }
 
-        public static ServiceReponse<string> ChangeProgram(DatabaseAccess dbAccess, int unitid, string program)
-        {
-            try
-            {
-                dbAccess.InsertValue("actions", "Unit_ID", "ActionName", "Status", unitid.ToString(), "UpdateProgram", "PENDING");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Connection error : {0}", e.Message);
-                return new ServiceReponse<string> { Result = true, Name = "AddAction", Payload = null };
-            }
-
-            return new ServiceReponse<string> { Result = true, Name = "AddAction", Payload = program };
-        }
-
         public static ServiceReponse<bool> SetTargetTemperature(DatabaseAccess dbAccess, int unitid, int value)
         {
             try
@@ -96,26 +81,6 @@ namespace ServerTest
             return new ServiceReponse<bool> { Result = true, Name = "SetThermostatState", Payload = true };
         }
 
-        public static ServiceReponse<bool> NotifyChange(DatabaseAccess dbAccess, int unitid, int value)
-        {
-            try
-            {
-                dbAccess.InsertValue("changes", "Unit_ID", "TargetTemperature", "Timestamp", unitid.ToString(), value.ToString(), DateTime.Now.ToString());
-            }
-            catch (ConnectionErrorException e)
-            {
-                Console.WriteLine("Request error : {0}", e.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "SetTargetTemperature", Payload = false };
-            }
-            catch (InvalidOperationException se)
-            {
-                Console.WriteLine("Error notifying change : {0}", se.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "NotifyChange", Payload = false };
-            }
-
-            return new ServiceReponse<bool> { Result = true, Name = "NotifyChange", Payload = true };
-        }
-
         public static ServiceReponse<bool> AddMeasure(IoTService iotService, DatabaseAccess dbAccess, int unitid, int temp, int humidity)
         {
             try
@@ -156,6 +121,21 @@ namespace ServerTest
             }
 
             return new ServiceReponse<bool> { Result = true, Name = "AddMeasure", Payload = true };
+        }
+
+        public static ServiceReponse<bool> NotifyChange(DatabaseAccess dbAccess, int unitid, int value)
+        {
+            try
+            {
+                dbAccess.InsertValue("changes", "Unit_ID", "Time", "Temperature", "Status", unitid.ToString(), DateTime.Now.ToString(), value.ToString(), "TODO");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return new ServiceReponse<bool> { Result = false, Name = "NotifyChange", Payload = false };
+            }
+
+            return new ServiceReponse<bool> { Result = true, Name = "NotifyChange", Payload = true };
         }
     }
 }

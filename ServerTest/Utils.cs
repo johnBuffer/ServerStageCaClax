@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using MySql.Data.MySqlClient;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,45 +26,6 @@ namespace ServerTest
         }
 
 
-        public static string InsertLine(int unitid, IoTService service)
-        {
-            var dbAccess = new DatabaseAccess(service.GetIp(), service.GetPort(), service.GetName(), service.GetUser(), service.GetPassword());
-
-            try
-            {
-                var request = dbAccess.Request("select ID, TargetTemperature, Timestamp from changes where Unit_ID = '" + unitid.ToString() + "' order by Timestamp asc");
-
-                if (request.Read())
-                {
-                    string id = request["ID"].ToString();
-                    string temperature = request["TargetTemperature"].ToString();
-                    string time = request["Timestamp"].ToString();
-                    string text = time + ">" + temperature + ">TODO";
-
-                    bool flag = false;
-                    do
-                    {
-                        flag = DeleteLine(id, service);
-                    } while (!flag);
-                    return text;
-                }
-                else if (!request.HasRows)
-                {
-                    return "Finished";
-                }
-                else
-                {
-                    return "Error";
-                }
-            }
-            catch (InvalidOperationException e)
-            {
-                Console.WriteLine(e.Message);
-                return "Error";
-            }
-        }
-
-
         public static bool DeleteLine(string id, IoTService service)
         {
             try
@@ -84,59 +46,75 @@ namespace ServerTest
         }
 
 
-        public int ReadProgram()
+        public static int ReadProgram(DatabaseAccess dbAccess, IoTService service, int unitid)
         {
-            var ci = new System.Globalization.CultureInfo("en-us");
-            string[] result;
-            char[] delimiter = { '>' };
-            char[] delimiter2 = { ' ' };
-            int i = 0;
+            MySqlDataReader tempRequest;
 
-            string path = @"C:\Users\dev1\Documents\Thermostat_programs\today_program";
-            result = File.ReadAllLines(path);
-
-            foreach (string elt in result)
+            try
             {
-                string[] splited_string = elt.Split(delimiter);
-                //if (splited_string[0] == DateTime.Now.ToString().Split(delimiter2)[1] && splited_string[2] != "DID")
-                //Console.WriteLine("Read one = "  + DateTime.Parse(splited_string[0]) + " / Real one = " + DateTime.Now + " / Comparison = " + DateTime.Parse(splited_string[0]).CompareTo(DateTime.Now));
-                if ((DateTime.Parse(splited_string[0]).CompareTo(DateTime.Now) <= 0) && splited_string[2] != "DONE")
-                {
-                    int temperature = int.Parse(splited_string[1]);
-                    string line_base = splited_string[0] + ">" + splited_string[1];
-                    Console.WriteLine("Line base = " + line_base);
-
-                    bool validation;
-                    do
-                    {
-                        validation = ValidateChangeInProgram(path, result, line_base, i);
-                    } while (!validation);
-
-                    return temperature;
-                }
-                i++;
+                tempRequest = dbAccess.Request("select * from changes where Unit_ID = " + unitid.ToString());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return -1;
             }
 
+            while (tempRequest.Read())
+            {
+                if(DateTime.Now.CompareTo(DateTime.Parse(tempRequest["Time"].ToString())) >= 0 && tempRequest["Status"].ToString() != "DONE")
+                {
+                    int temp = (int) tempRequest["Temperature"];
+                    int id = (int) tempRequest["ID"];
+                    tempRequest.Close();
+
+                    try
+                    {
+                        dbAccess = new DatabaseAccess(service.GetIp(), service.GetPort(), service.GetName(), service.GetUser(), service.GetPassword());
+                        dbAccess.Update("changes", id.ToString(), "Status", "DONE");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        return -1;
+                    }
+                    return temp;
+                }
+            }
+
+            tempRequest.Close();
             return -1;
         }
 
 
-        public bool ValidateChangeInProgram(string path, string[] text, string line_base, int i)
+        public static string LoadProgram(DatabaseAccess dbAccess, int unitid)
         {
-            string line = line_base + ">DONE";
-            Console.WriteLine("Line to be written : " + line);
-            text[i] = line;
+            string program = "";
+            MySqlDataReader tempRequest;
 
             try
             {
-                File.WriteAllLines(path, text);
+                tempRequest = dbAccess.Request("select * from changes where Unit_ID = " + unitid.ToString());
             }
             catch (Exception e)
             {
-                return false;
+                Console.WriteLine(e.Message);
+                return "Error";
+            }
+            
+            if(tempRequest.Read())
+            {
+                foreach(MySqlDataReader elt in tempRequest)
+                {
+                    program = program + elt["Time"].ToString() + ":" + elt["Temperature"].ToString() + ":";
+                }
+
+                tempRequest.Close();
             }
 
-            return true;
+            Console.WriteLine(program);
+            tempRequest.Close();
+            return program;
         }
     }
 }

@@ -42,7 +42,7 @@ namespace ServerTest
 
 
         // add a ping in the pings table
-        public ServiceReponse<bool> AddPing(int unitid)
+        public ServiceReponse<string> AddPing(int unitid)
         {
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
@@ -56,15 +56,6 @@ namespace ServerTest
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
             return DatabaseSetters.AddAction(dbAccess, unitid, action);
-        }
-
-
-        // Add a update program action, basically the same as add action but return a string payload with the program
-        public ServiceReponse<string> ChangeProgram(int unitid, string program)
-        {
-            var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
-
-            return DatabaseSetters.ChangeProgram(dbAccess, unitid, program);
         }
 
 
@@ -155,33 +146,6 @@ namespace ServerTest
             var dbAccess = new DatabaseAccess(_ip, _port, _dataBaseName, _user, _password);
 
             return DatabaseSetters.NotifyChange(dbAccess, unitid, value);
-        }
-
-
-        public ServiceReponse<bool> SaveChanges(int unitid)
-        {
-            string result = Utils.InsertLine(unitid, this);
-            List<string> text = new List<string>();
-            while(result != "Finished")
-            {
-                if(result != "Error")
-                {
-                    text.Add(result);
-                    result = Utils.InsertLine(unitid, this);
-                }
-            }
-
-            string path = @"C:\Users\dev1\Documents\Thermostat_programs\today_program";
-            File.WriteAllLines(path, text);
-
-            string oneLineProgram = "";
-            foreach(string elt in text)
-            {
-                oneLineProgram = oneLineProgram + elt + ";";
-            }
-
-            ChangeProgram(unitid, oneLineProgram);
-            return new ServiceReponse<bool> { Result = true, Name = "SaveChanges", Payload = true};
         }
 
 

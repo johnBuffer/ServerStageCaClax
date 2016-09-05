@@ -9,7 +9,7 @@ namespace ServerTest
 {
     class PingManager
     {
-        public static ServiceReponse<bool> HandlePing(IoTService iotService, DatabaseAccess dbAccess, int unitid)
+        public static ServiceReponse<string> HandlePing(IoTService iotService, DatabaseAccess dbAccess, int unitid)
         {
             try
             {
@@ -18,12 +18,12 @@ namespace ServerTest
             catch (ConnectionErrorException e)
             {
                 Console.WriteLine("Connection error : {0}", e.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = false };
+                return new ServiceReponse<string> { Result = false, Name = "AddPing", Payload = "" };
             }
             catch (InvalidOperationException se)
             {
                 Console.WriteLine("Connection error : {0}", se.Message);
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = false };
+                return new ServiceReponse<string> { Result = false, Name = "AddPing", Payload = "" };
             }
 
             // Check for pending actions
@@ -32,23 +32,29 @@ namespace ServerTest
             if (pendingActions.Read())
             {
                 var action = pendingActions["ActionName"].ToString();
+                string payload = "";
+
+                if(object.Equals(action, "UpdateProgram"))
+                {
+                    payload = Utils.LoadProgram(dbAccess, unitid);
+                }
                 var actionID = pendingActions["ID"].ToString();
                 pendingActions.Close();
-                return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true, Action = action, ActionID = actionID };
+                return new ServiceReponse<string> { Result = true, Name = "AddPing", Payload = payload, Action = action, ActionID = actionID };
             }
 
             pendingActions.Close();
 
             //Check for changes in the programm
-            /*int temperature = ReadProgram();
+            int temperature = Utils.ReadProgram(dbAccess, iotService, unitid);
             if (temperature != -1)
             {
-                SetTargetTemperature(unitid, temperature);
-            }*/
+                iotService.SetTargetTemperature(unitid, temperature);
+            }
 
             // Check for thermostat actions
 
-            return new ServiceReponse<bool> { Result = true, Name = "AddPing", Payload = true };
+            return new ServiceReponse<string> { Result = true, Name = "AddPing", Payload = "" };
         }
     }
 }
